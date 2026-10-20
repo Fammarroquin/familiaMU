@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>familiaMU</title>
+<meta name="description" content="La web de la familia Marroquín: tiendita, acuerdos e historias.">
+<meta name="theme-color" content="#C62828">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="familiaMU">
+<meta property="og:title" content="familiaMU — la web de la familia">
+<meta property="og:description" content="Pide en la tiendita y envía tu pedido al grupo 🛒">
+<meta property="og:image" content="https://fammarroquin.github.io/familiaMU/assets/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://fammarroquin.github.io/familiaMU/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/img/favicon.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="fila">
+      <div class="icono"><img src="assets/img/icon-192.png" alt=""></div>
+      <div>
+        <h1>familiaMU</h1>
+        <div class="sub">La web de la familia Marroquín</div>
+      </div>
+    </div>
+    <button class="boton claro instalar" data-instalar hidden>📲&nbsp; Agregar a la pantalla de inicio</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Secciones</h2>
+  <div class="secciones">
+    <a class="seccion" href="tiendita/">
+      <div class="e">🛒</div>
+      <div><b>Tiendita</b><span>Elige, paga con Yape, Plin o efectivo y envía tu pedido al grupo.</span></div>
+      <div class="flecha">›</div>
+    </a>
+    <div class="seccion bloqueada" aria-disabled="true">
+      <div class="e">🗳️</div>
+      <div><b>Acuerdos <span class="etiqueta">PRONTO</span></b><span>🔒 Con inicio de sesión de la app.</span></div>
+    </div>
+    <div class="seccion bloqueada" aria-disabled="true">
+      <div class="e">📖</div>
+      <div><b>Historias <span class="etiqueta">PRONTO</span></b><span>🔒 Con inicio de sesión de la app.</span></div>
+    </div>
+  </div>
+
+  <div class="aviso" data-ayuda-ios hidden style="margin-top:16px">
+    📲 <b>En iPhone:</b> toca <b>Compartir</b> (el cuadrado con flecha) y luego
+    <b>“Agregar a inicio”</b> para tenerla como app.
+  </div>
+
+  <footer>Hecho con cariño para la familia Marroquín 💛</footer>
+</main>
+
+<script src="assets/app.js" data-base="./" defer></script>
+</body>
+</html>

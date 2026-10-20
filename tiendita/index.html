@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tiendita · familiaMU</title>
+<meta name="description" content="La tiendita de la familia: elige, paga con Yape, Plin o efectivo y envía tu pedido al grupo.">
+<meta name="theme-color" content="#C62828">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="familiaMU">
+<meta property="og:title" content="Tiendita familiaMU 🛒">
+<meta property="og:description" content="Elige, paga con Yape, Plin o efectivo y envía tu pedido al grupo.">
+<meta property="og:image" content="https://fammarroquin.github.io/familiaMU/assets/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://fammarroquin.github.io/familiaMU/tiendita/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../assets/img/favicon.png">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/estilo.css">
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap fila">
+    <a class="volver" href="../" aria-label="Volver a familiaMU">‹</a>
+    <div class="icono"><img src="../assets/img/icon-192.png" alt=""></div>
+    <h1>Tiendita</h1>
+    <div class="persona" id="persona" hidden>
+      👤 <span id="personaNombre"></span><br>
+      <button class="enlace" type="button" id="btnNoSoyYo">No soy yo / cambiar</button>
+    </div>
+  </div>
+</div>
+
+<div class="buscador">
+  <div class="wrap">
+    <input id="buscar" type="search" placeholder="🔍  Buscar producto…" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto">
+    <div class="filtros" id="filtros" role="toolbar" aria-label="Filtrar por tipo"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="aviso" id="avisoCerrada" hidden style="margin-top:14px">🔒 La tiendita está cerrada por ahora. Puedes mirar, pero aún no se puede pedir.</div>
+  <div class="estado" id="estado">Cargando productos…</div>
+  <div class="productos" id="productos"></div>
+</main>
+
+<div class="barra" id="barra" hidden>
+  <div class="wrap">
+    <div class="resumen"><b id="barraTotal">S/ 0.00</b><span id="barraCant">0 productos</span></div>
+    <button class="boton" id="btnComprar" type="button">Comprar</button>
+  </div>
+</div>
+
+<!-- Datos: solo la primera vez (se recuerdan en este celular) -->
+<dialog class="hoja" id="dlgDatos">
+  <form class="cuerpo" id="formDatos" novalidate>
+    <div class="cabeza"><h3>¿Quién pide?</h3><button class="cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button></div>
+    <p class="nota">Solo te lo preguntamos una vez; queda guardado en este celular.</p>
+    <label class="campo" id="cNombre"><span>Tu nombre</span>
+      <input id="fNombre" maxlength="40" autocomplete="name" required>
+      <small></small>
+    </label>
+    <label class="campo" id="cCelular"><span>Celular (opcional)</span>
+      <input id="fCelular" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="9xx xxx xxx">
+      <small></small>
+    </label>
+    <label class="campo" id="cCodigo"><span>Código del grupo</span>
+      <input id="fCodigo" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <small>Pídelo en el grupo de WhatsApp de la familia.</small>
+    </label>
+    <button class="boton" type="submit">Seguir</button>
+  </form>
+</dialog>
+
+<!-- Pago -->
+<dialog class="hoja" id="dlgPago">
+  <div class="cuerpo">
+    <div class="cabeza"><h3>Tu pedido</h3><button class="cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button></div>
+    <ul class="lineas" id="pagoLineas"></ul>
+    <div class="total"><span>Total</span><span id="pagoTotal">S/ 0.00</span></div>
+    <p class="para">A nombre de <b id="pagoNombre"></b> · <button class="enlace" type="button" id="btnCambiarDatos">No soy yo / cambiar</button></p>
+
+    <h2>¿Cómo pagas?</h2>
+    <div class="medios" id="medios">
+      <button class="medio" type="button" data-medio="yape" aria-pressed="false"><span class="e">💜</span>Yape</button>
+      <button class="medio" type="button" data-medio="plin" aria-pressed="false"><span class="e">💙</span>Plin</button>
+      <button class="medio" type="button" data-medio="efectivo" aria-pressed="false"><span class="e">💵</span>Efectivo</button>
+    </div>
+
+    <div id="bloqueBaucher" hidden>
+      <h2>Baucher (opcional)</h2>
+      <div class="baucher">
+        <label class="boton borde" for="fBaucher">📷&nbsp; <span id="txtBaucher">Tomar o elegir foto</span></label>
+        <input id="fBaucher" type="file" accept="image/*" hidden>
+        <img id="imgBaucher" alt="Baucher" hidden>
+        <button class="cerrar" type="button" id="btnQuitarBaucher" aria-label="Quitar foto" hidden>✕</button>
+      </div>
+    </div>
+
+    <div id="bloquePagado" hidden>
+      <h2>¿Ya pagaste?</h2>
+      <div class="sino">
+        <button type="button" class="si" data-pagado="si" aria-pressed="false">✅ Sí, ya pagué</button>
+        <button type="button" class="no" data-pagado="no" aria-pressed="true">⏳ Todavía no</button>
+      </div>
+    </div>
+
+    <div class="error" id="pagoError" hidden></div>
+    <div class="pila">
+      <button class="boton wa" type="button" id="btnEnviar" disabled>Enviar al grupo</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Listo -->
+<dialog class="hoja" id="dlgListo">
+  <div class="cuerpo listo">
+    <div class="check">✓</div>
+    <h3 id="listoTitulo">Pedido creado</h3>
+    <p id="listoTexto">Queda pendiente hasta que lo aprueben en la app.</p>
+    <img class="tarjeta" id="imgTarjeta" alt="Foto del pedido" hidden>
+    <div class="aviso" id="listoAviso" hidden></div>
+    <div class="pila">
+      <button class="boton wa" type="button" id="btnReenviar">Enviar al grupo</button>
+      <a class="boton borde" id="btnDescargar" hidden>Descargar foto del pedido</a>
+      <button class="enlace" type="button" data-cerrar>Seguir comprando</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="../assets/supabase.js"></script>
+<script src="../assets/tiendita.js"></script>
+<script src="../assets/app.js" data-base="../" defer></script>
+</body>
+</html>
