@@ -62,7 +62,13 @@
       estado.maxLineas = data.max_lineas || 15;
       estado.productos = data.productos || [];
       estado.porId = {};
-      estado.productos.forEach(function (p) { estado.porId[p.producto_id] = p; });
+      estado.productos.forEach(function (p) {
+        // "stock" = real (SQL nuevo); si no viene (SQL viejo), "disponible".
+        p.stock = typeof p.stock === 'number' ? p.stock : p.disponible;
+        // Lo máximo que se puede agregar: el menor entre stock y tope.
+        p.maximo = Math.min(p.stock, p.disponible, estado.maxUnidades);
+        estado.porId[p.producto_id] = p;
+      });
       ajustarCarrito();
       $('avisoCerrada').hidden = estado.abierta;
       pintarFiltros();
@@ -82,7 +88,7 @@
       var p = estado.porId[id];
       var c = Math.floor(Number(estado.carrito[id]) || 0);
       if (!p || c < 1) delete estado.carrito[id];
-      else estado.carrito[id] = Math.min(c, p.disponible);
+      else estado.carrito[id] = Math.min(c, p.maximo);
     });
     FMU.guardar(CLAVE_CARRITO, estado.carrito);
   }
@@ -114,13 +120,15 @@
     var foto = /^https:\/\//.test(p.imagen_url || '')
       ? '<img src="' + esc(p.imagen_url) + '" alt="" loading="lazy" onerror="this.replaceWith(document.createTextNode(\'' + emoji(p.categoria) + '\'))">'
       : emoji(p.categoria);
-    var quedan = p.disponible < estado.maxUnidades
-      ? '<span class="quedan">' + (p.disponible === 1 ? '¡Último!' : '¡Últimos ' + p.disponible + '!') + '</span>' : '';
+    var quedan = '<span class="quedan' + (p.stock <= 3 ? ' pocas' : '') + '">Quedan ' + p.stock + '</span>';
+    // Llegó al tope por pedido pero hay más stock: se explica por qué no sube.
+    var tope = cant >= p.maximo && p.stock > estado.maxUnidades
+      ? '<span class="tope">Máximo ' + estado.maxUnidades + ' por pedido</span>' : '';
     var acciones = cant > 0
       ? '<div class="contador">' +
           '<button type="button" data-accion="menos" aria-label="Quitar uno">−</button>' +
           '<output aria-live="polite">' + cant + '</output>' +
-          '<button type="button" data-accion="mas" aria-label="Agregar uno"' + (cant >= p.disponible ? ' disabled' : '') + '>+</button>' +
+          '<button type="button" data-accion="mas" aria-label="Agregar uno"' + (cant >= p.maximo ? ' disabled' : '') + '>+</button>' +
         '</div>'
       : '<button type="button" class="agregar" data-accion="mas">Agregar</button>';
     return '<article class="prod' + (cant > 0 ? ' en-carrito' : '') + '" data-id="' + esc(p.producto_id) + '">' +
@@ -129,7 +137,7 @@
         '<div class="nombre">' + esc(p.nombre) + '</div>' +
         (p.marca ? '<div class="marca">' + esc(p.marca) + '</div>' : '') +
         '<div class="precio">' + soles(p.precio) + '</div>' + quedan +
-        '<div class="acciones">' + acciones + '</div>' +
+        '<div class="acciones">' + acciones + tope + '</div>' +
       '</div></article>';
   }
 
@@ -172,7 +180,7 @@
       alert('Máximo ' + estado.maxLineas + ' productos distintos por pedido.');
       return;
     }
-    var nueva = Math.max(0, Math.min(p.disponible, actual + delta));
+    var nueva = Math.max(0, Math.min(p.maximo, actual + delta));
     if (nueva) estado.carrito[id] = nueva; else delete estado.carrito[id];
     FMU.guardar(CLAVE_CARRITO, estado.carrito);
     pintarProducto(id);
