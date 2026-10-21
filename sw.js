@@ -1,7 +1,7 @@
 // familiaMU — service worker.
 // Red primero (para que los cambios lleguen al instante) y caché solo como
 // respaldo sin conexión. Nunca guarda llamadas a Supabase ni a otros sitios.
-var CACHE = 'familiamu-v1';
+var CACHE = 'familiamu-v2';
 var BASICOS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ var BASICOS = [
   './assets/supabase.js',
   './assets/app.js',
   './assets/tiendita.js',
+  './assets/descarga-app.js',
   './assets/img/icon-192.png',
   './assets/img/icon-512.png',
   './assets/img/favicon.png'

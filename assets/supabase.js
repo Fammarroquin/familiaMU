@@ -2,8 +2,8 @@
 //
 // Página PÚBLICA: aquí va SOLO la anon key (la misma de la app y de la
 // página de descarga). NUNCA la service_role. Lo que anon puede hacer lo
-// deciden los GRANT de la base: hoy solo fn_web_catalogo y
-// fn_web_crear_pedido.
+// deciden los GRANT de la base: hoy fn_web_catalogo, fn_web_crear_pedido
+// y leer la tabla app_version (la misma que usa la página de descarga).
 //
 // Preparado para las secciones privadas (Acuerdos, Historias): cuando
 // exista el inicio de sesión, FMU.sesion guardará el access_token y rpc()
@@ -36,6 +36,13 @@
     });
   }
 
+  // Lectura simple de una tabla por REST (p. ej. 'app_version?select=version_name&limit=1').
+  function select(consulta) {
+    return fetch(SUPABASE_URL + '/rest/v1/' + consulta, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+    }).then(function (r) { return r.ok ? r.json() : []; });
+  }
+
   // Lectura/escritura segura de localStorage (puede fallar en modo privado).
   function leer(clave) {
     try { var v = localStorage.getItem(clave); return v ? JSON.parse(v) : null; } catch (e) { return null; }
@@ -47,5 +54,5 @@
     } catch (e) { /* sin almacenamiento: sigue funcionando sin recordar */ }
   }
 
-  window.FMU = { rpc: rpc, leer: leer, guardar: guardar, sesion: null };
+  window.FMU = { rpc: rpc, select: select, leer: leer, guardar: guardar, sesion: null };
 })();
