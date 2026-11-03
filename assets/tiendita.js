@@ -21,6 +21,8 @@
     filtro: '',
     busqueda: '',
     medio: null,
+    // Medios que el admin tiene activos (Ajustes › Configuración de pagos).
+    medios: { yape: true, plin: true, efectivo: true },
     yaPago: false,
     baucher: null,          // File comprimido
     ultimo: null,           // último pedido creado (para reenviar)
@@ -61,6 +63,10 @@
       estado.maxUnidades = data.max_unidades || 10;
       estado.maxLineas = data.max_lineas || 15;
       estado.productos = data.productos || [];
+      // Si el SQL es viejo y no manda los campos, se muestran ambos.
+      estado.medios.yape = data.yape_activo !== false;
+      estado.medios.plin = data.plin_activo !== false;
+      if (estado.medio && !estado.medios[estado.medio]) estado.medio = null;
       estado.porId = {};
       estado.productos.forEach(function (p) {
         // "stock" = real (SQL nuevo); si no viene (SQL viejo), "disponible".
@@ -272,13 +278,14 @@
   }
 
   function elegirMedio(m) {
-    estado.medio = ['yape', 'plin', 'efectivo'].indexOf(m) >= 0 ? m : null;
+    estado.medio = ['yape', 'plin', 'efectivo'].indexOf(m) >= 0 && estado.medios[m] ? m : null;
     if (estado.medio === 'efectivo') quitarBaucher();
     pintarPago();
   }
 
   function pintarPago() {
     document.querySelectorAll('[data-medio]').forEach(function (b) {
+      b.hidden = !estado.medios[b.dataset.medio];
       b.setAttribute('aria-pressed', String(b.dataset.medio === estado.medio));
     });
     var digital = estado.medio === 'yape' || estado.medio === 'plin';
