@@ -1,6 +1,6 @@
 // familiaMU — Tiendita.
 // Flujo: buscar → carrito → Comprar → Yape/Plin/Efectivo → (baucher) →
-// Enviar al grupo. El pedido se crea SIEMPRE en el servidor
+// Enviar al grupo (baucher + descripción del pedido, sin foto del pedido). El pedido se crea SIEMPRE en el servidor
 // (fn_web_crear_pedido) antes de abrir WhatsApp: precios, stock y total
 // los decide Supabase, no esta página.
 (function () {
@@ -372,8 +372,6 @@
         medio: estado.medio,
         yaPago: estado.yaPago || tieneFoto,
         baucher: estado.baucher,
-        fecha: new Date(),
-        tarjeta: null,
         enviado: false
       };
       FMU.guardar(CLAVE_PAGO, estado.medio);
@@ -386,14 +384,9 @@
       cerrar($('dlgPago'));
       mostrarListo();
       cargar();
-      // Un solo intento automático, y solo si se puede compartir la foto.
+      // Un solo intento automático, y solo si hay baucher para compartir.
       // Si no, la persona usa el botón (nunca se abre WhatsApp dos veces).
-      return dibujarTarjeta(u).then(function (archivo) {
-        if (estado.ultimo !== u) return;
-        u.tarjeta = archivo;
-        pintarListo();
-        if ($('dlgListo').open) compartir(true);
-      });
+      compartir(true);
     }).catch(function () {
       mostrarError('Sin conexión o error del servidor. Revisa tu internet e intenta de nuevo.');
     }).finally(function () {
@@ -413,50 +406,26 @@
     $('listoTexto').textContent = 'Total ' + soles(u.total) +
       '. Queda pendiente hasta que lo aprueben en la app.';
     $('listoAviso').hidden = true;
-    if ($('btnDescargar').href) URL.revokeObjectURL($('btnDescargar').href);
-    $('btnDescargar').removeAttribute('href');
-    $('imgTarjeta').removeAttribute('src');
     pintarListo();
     abrir($('dlgListo'));
   }
 
   function pintarListo() {
     var u = estado.ultimo;
-    var listo = !!(u && u.tarjeta);
-    $('imgTarjeta').hidden = !listo;
-    $('btnDescargar').hidden = !listo;
-    if (listo && !$('btnDescargar').href) {
-      var url = URL.createObjectURL(u.tarjeta);
-      $('btnDescargar').href = url;
-      $('btnDescargar').download = u.tarjeta.name;
-      $('imgTarjeta').src = url;
-    }
-    // Mientras se dibuja la foto no se puede enviar (evita un envío sin ella).
-    var dibujando = u && u.tarjeta === null;
-    $('btnReenviar').disabled = dibujando || estado.compartiendo;
-    $('btnReenviar').textContent = dibujando ? 'Preparando foto…'
-      : (u && u.enviado ? 'Enviar otra vez' : 'Enviar al grupo');
+    $('btnReenviar').disabled = estado.compartiendo;
+    $('btnReenviar').textContent = u && u.enviado ? 'Enviar otra vez' : 'Enviar al grupo';
   }
 
-  function nombreMedio(m) { return { yape: 'Yape', plin: 'Plin', efectivo: 'Efectivo' }[m] || m; }
-  function textoPago(u) {
-    return u.yaPago ? 'Ya pagó' : (u.medio === 'efectivo' ? 'Paga al recoger' : 'Por pagar');
-  }
-
-  // Va junto a la foto.
-  function leyenda(u) {
-    return 'Pedido ' + u.correlativo + ' · ' + soles(u.total) + ' · ' + nombreMedio(u.medio);
-  }
-
-  // Respaldo sin foto: corto, SIN emojis (WhatsApp Web los rompe) y con
-  // el formato de WhatsApp (*negrita*).
-  function textoCorto(u) {
-    var t = ['*Pedido ' + u.correlativo + '* · Tiendita', u.nombre];
+  // Mismo formato que la app (mensaje_pedido.dart): primero el nombre,
+  // luego productos y total, y al final el nro. de pedido en cursiva
+  // (WhatsApp no tiene letra pequeña). Sin emojis: WhatsApp Web los rompe.
+  function textoPedido(u) {
+    var t = ['*' + u.nombre + '*'];
     u.items.forEach(function (i) {
       t.push(i.cantidad + ' x ' + i.nombre + ' — ' + soles(i.subtotal));
     });
     t.push('*Total: ' + soles(u.total) + '*');
-    t.push(nombreMedio(u.medio) + ' · ' + textoPago(u));
+    t.push('_Pedido ' + u.correlativo + '_');
     return t.join('\n');
   }
 
@@ -476,31 +445,23 @@
     pintarListo();
   }
 
-  // Con soporte: navigator.share con la tarjeta (+ baucher) y la leyenda;
-  // Android lo manda directo a WhatsApp y la persona elige el grupo.
-  // Sin soporte: api.whatsapp.com con texto corto + botón "Descargar".
+  // Con baucher y soporte: navigator.share con la foto del baucher y la
+  // descripción como texto; Android lo manda directo a WhatsApp y la
+  // persona elige el grupo. Sin baucher (o sin soporte): api.whatsapp.com
+  // solo con el texto.
   // auto = intento automático tras crear el pedido: nunca abre WhatsApp
   // por su cuenta en el respaldo, para no duplicar con el botón.
   function compartir(auto) {
     var u = estado.ultimo;
-    if (!u || u.tarjeta === null || estado.compartiendo) return;
+    if (!u || estado.compartiendo) return;
+    var texto = textoPedido(u);
 
-    var archivos = null;
-    if (u.tarjeta) {
-      var todos = u.baucher ? [u.tarjeta, u.baucher] : [u.tarjeta];
-      if (puedeCompartir(todos)) archivos = todos;
-      else if (u.baucher && puedeCompartir([u.tarjeta])) {
-        archivos = [u.tarjeta];
-        avisoListo('No se pudo adjuntar el baucher junto a la foto: envíalo aparte en el chat.');
-      }
-    }
-
-    if (archivos) {
+    if (u.baucher && puedeCompartir([u.baucher])) {
       estado.compartiendo = true;
       pintarListo();
-      navigator.share({ files: archivos, text: leyenda(u) }).then(marcarEnviado).catch(function (e) {
+      navigator.share({ files: [u.baucher], text: texto }).then(marcarEnviado).catch(function (e) {
         if (e && e.name === 'AbortError') return;   // la persona canceló
-        avisoListo('Toca <b>“Enviar al grupo”</b> para compartir la foto del pedido.');
+        avisoListo('Toca <b>“Enviar al grupo”</b> para compartir tu baucher.');
       }).finally(function () {
         estado.compartiendo = false;
         pintarListo();
@@ -509,184 +470,17 @@
     }
 
     if (auto) {
-      avisoListo('Toca <b>“Enviar al grupo”</b> para abrir WhatsApp. ' +
-        (u.tarjeta ? 'Si quieres la foto del pedido, descárgala y adjúntala en el chat.' : ''));
+      avisoListo('Toca <b>“Enviar al grupo”</b> para abrir WhatsApp.' +
+        (u.baucher ? ' Luego adjunta tu baucher en el chat.' : ''));
       return;
     }
-    abrirWhatsApp(textoCorto(u));
+    abrirWhatsApp(texto);
     marcarEnviado();
   }
 
   function avisoListo(html) {
     $('listoAviso').innerHTML = html;
     $('listoAviso').hidden = false;
-  }
-
-  // ------------------------------------------------- tarjeta del pedido
-  // Boleta en PNG de 1080 px de ancho, dibujada en canvas. Nunca falla:
-  // si algo sale mal, resuelve null y se usa solo el texto.
-  var ANCHO = 1080, M = 64;
-  var C_ROJO = '#D32F2F', C_ROJO2 = '#B71C1C', C_TEXTO = '#1D1B20', C_GRIS = '#5F6368',
-      C_BORDE = '#E4E4E7', C_SUAVE = '#FFEBEE', C_VERDE = '#2E7D32', C_VERDE_SUAVE = '#E8F5E9',
-      C_AMBAR = '#8D5A00', C_AMBAR_SUAVE = '#FFF3D6';
-
-  function cargarImagen(src) {
-    return new Promise(function (ok) {
-      var img = new Image();
-      img.onload = function () { ok(img); };
-      img.onerror = function () { ok(null); };
-      img.src = src;
-    });
-  }
-
-  function fuentesListas() {
-    if (!document.fonts || !document.fonts.load) return Promise.resolve();
-    var cargas = Promise.all(['400 40px Roboto', '500 40px Roboto', '700 40px Roboto']
-      .map(function (f) { return document.fonts.load(f); }));
-    return Promise.race([cargas, new Promise(function (ok) { setTimeout(ok, 1500); })]).catch(function () {});
-  }
-
-  function rectRedondo(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-
-  function partirLineas(ctx, texto, ancho) {
-    var palabras = String(texto).split(/\s+/), lineas = [], actual = '';
-    palabras.forEach(function (p) {
-      var prueba = actual ? actual + ' ' + p : p;
-      if (ctx.measureText(prueba).width <= ancho || !actual) actual = prueba;
-      else { lineas.push(actual); actual = p; }
-    });
-    if (actual) lineas.push(actual);
-    return lineas;
-  }
-
-  function lineaPunteada(ctx, y) {
-    ctx.save();
-    ctx.strokeStyle = C_BORDE;
-    ctx.lineWidth = 3;
-    ctx.setLineDash([14, 12]);
-    ctx.beginPath(); ctx.moveTo(M, y); ctx.lineTo(ANCHO - M, y); ctx.stroke();
-    ctx.restore();
-  }
-
-  function pastilla(ctx, x, y, texto, fondo, color) {
-    ctx.font = '700 38px Roboto, system-ui, sans-serif';
-    var w = ctx.measureText(texto).width + 56;
-    ctx.fillStyle = fondo; rectRedondo(ctx, x, y, w, 76, 38); ctx.fill();
-    ctx.fillStyle = color; ctx.textBaseline = 'middle'; ctx.fillText(texto, x + 28, y + 39);
-    ctx.textBaseline = 'alphabetic';
-    return w;
-  }
-
-  function pintarTarjeta(canvas, u, logo) {
-    var ctx = canvas.getContext('2d');
-    var F = ' Roboto, system-ui, sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Cabecera roja con el logo.
-    var g = ctx.createLinearGradient(0, 0, ANCHO, 240);
-    g.addColorStop(0, '#E53935'); g.addColorStop(1, C_ROJO2);
-    ctx.fillStyle = g; ctx.fillRect(0, 0, ANCHO, 240);
-    var xt = M;
-    if (logo) {
-      ctx.save(); rectRedondo(ctx, M, 44, 152, 152, 36); ctx.clip();
-      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(M, 44, 152, 152);
-      ctx.drawImage(logo, M, 44, 152, 152); ctx.restore();
-      xt = M + 152 + 36;
-    }
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 64px' + F; ctx.fillText('Tiendita Petita', xt, 122);
-    ctx.globalAlpha = 0.9; ctx.font = '400 36px' + F; ctx.fillText('familiaMU', xt, 174);
-    ctx.globalAlpha = 1;
-
-    // Pedido, nombre y fecha.
-    var y = 340;
-    ctx.fillStyle = C_TEXTO; ctx.font = '700 76px' + F;
-    ctx.fillText('Pedido ' + u.correlativo, M, y);
-    y += 66; ctx.font = '500 42px' + F;
-    ctx.fillText(u.nombre + (u.celular ? '  ·  ' + u.celular : ''), M, y);
-    y += 54; ctx.fillStyle = C_GRIS; ctx.font = '400 36px' + F;
-    var f = u.fecha;
-    var fecha = f.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }) +
-      ' · ' + f.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-    ctx.fillText(fecha.charAt(0).toUpperCase() + fecha.slice(1), M, y);
-
-    y += 50; lineaPunteada(ctx, y); y += 74;
-
-    // Productos: "2 × Nombre ........ S/ 2.40"
-    var anchoNombre = ANCHO - 2 * M - 250;
-    u.items.forEach(function (i) {
-      ctx.font = '400 42px' + F;
-      var ls = partirLineas(ctx, i.cantidad + ' × ' + i.nombre, anchoNombre);
-      ctx.fillStyle = C_TEXTO;
-      ls.forEach(function (l, k) { ctx.fillText(l, M, y + k * 54); });
-      ctx.font = '700 42px' + F; ctx.textAlign = 'right';
-      ctx.fillText(soles(i.subtotal), ANCHO - M, y);
-      ctx.textAlign = 'left';
-      y += ls.length * 54 + 22;
-    });
-
-    y += 4; lineaPunteada(ctx, y); y += 112;
-
-    // TOTAL grande.
-    ctx.fillStyle = C_GRIS; ctx.font = '700 40px' + F;
-    ctx.fillText('TOTAL', M, y - 12);
-    ctx.fillStyle = C_ROJO; ctx.font = '700 104px' + F; ctx.textAlign = 'right';
-    ctx.fillText(soles(u.total), ANCHO - M, y);
-    ctx.textAlign = 'left';
-
-    // Medio de pago y estado.
-    y += 52;
-    var w = pastilla(ctx, M, y, nombreMedio(u.medio), C_SUAVE, C_ROJO);
-    if (u.yaPago) pastilla(ctx, M + w + 18, y, 'Ya pagó ✓', C_VERDE_SUAVE, C_VERDE);
-    else pastilla(ctx, M + w + 18, y, textoPago(u), C_AMBAR_SUAVE, C_AMBAR);
-    y += 76 + 64;
-
-    ctx.fillStyle = C_GRIS; ctx.font = '400 30px' + F; ctx.textAlign = 'center';
-    ctx.fillText('Pendiente de aprobación en la app', ANCHO / 2, y);
-    ctx.textAlign = 'left';
-    return y + 56;   // alto usado
-  }
-
-  function dibujarTarjeta(u) {
-    var logoUrl = new URL('../assets/img/icon-512.png', location.href).href;
-    return Promise.all([fuentesListas(), cargarImagen(logoUrl)]).then(function (r) {
-      var logo = r[1];
-      // Primero se mide el alto con un lienzo grande, luego se dibuja al alto exacto.
-      var prueba = document.createElement('canvas');
-      prueba.width = ANCHO; prueba.height = 4000;
-      var alto = pintarTarjeta(prueba, u, logo);
-      var canvas = document.createElement('canvas');
-      canvas.width = ANCHO; canvas.height = alto;
-      pintarTarjeta(canvas, u, logo);
-      return aArchivo(canvas, u).catch(function () {
-        // Si el logo "ensucia" el lienzo (p. ej. abierto como archivo local),
-        // se repite en un lienzo nuevo y sin logo.
-        var limpio = document.createElement('canvas');
-        limpio.width = ANCHO; limpio.height = alto;
-        pintarTarjeta(limpio, u, null);
-        return aArchivo(limpio, u);
-      });
-    }).catch(function () { return false; });
-  }
-
-  function aArchivo(canvas, u) {
-    return new Promise(function (ok, mal) {
-      try {
-        canvas.toBlob(function (b) {
-          if (b) ok(new File([b], 'pedido-' + u.correlativo + '.png', { type: 'image/png' }));
-          else mal(new Error('sin imagen'));
-        }, 'image/png');
-      } catch (e) { mal(e); }
-    });
   }
 
   // ------------------------------------------------------------- eventos
