@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Descargando AppFMarroquin…</title>
+<!-- Lo que muestra WhatsApp: una tarjeta grande con la imagen. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="📲 Toca aquí para instalar AppFMarroquin">
+<meta property="og:description" content="La app de la familia Marroquín · Android">
+<meta property="og:image" content="https://fammarroquin.github.io/familiaMU/app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://fammarroquin.github.io/familiaMU/app/descargar.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#C62828">
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; text-align: center;
+         font-family: Roboto, system-ui, sans-serif; color: #fff;
+         background: linear-gradient(160deg, #E53935, #8E0E0E); padding: 24px; box-sizing: border-box; }
+  img { width: 96px; height: 96px; border-radius: 24px; background: #fff; }
+  h1 { font-size: 22px; margin: 18px 0 6px; }
+  p { opacity: .92; line-height: 1.45; margin: 6px 0; }
+  a.b { display: inline-block; margin-top: 18px; background: #fff; color: #B71C1C; font-weight: 700;
+        padding: 14px 26px; border-radius: 999px; text-decoration: none; font-size: 17px; }
+  small { display: block; margin-top: 22px; opacity: .85; }
+  small a { color: #fff; }
+</style>
+</head>
+<body>
+  <div>
+    <img src="icon.png" alt="">
+    <h1>Descargando AppFMarroquin…</h1>
+    <p>Cuando termine, toca la descarga y luego <b>Instalar</b>.</p>
+    <p>Si Android pregunta, elige <b>“Permitir de esta fuente”</b> y si aparece Play Protect, <b>“Instalar de todas formas”</b>.</p>
+    <a class="b" id="b" href="#">⬇ Descargar de nuevo</a>
+    <small><a id="b32" href="#">¿Celular antiguo o dice “No se instaló”? Descarga esta otra versión</a></small>
+    <small><a href="./">Ver ayuda e instrucciones</a></small>
+  </div>
+<script>
+  // El enlace del APK se toma de Supabase (tabla app_version, columna url_apk):
+  // así solo lo cambias en UN lugar. Este de abajo es solo por si falla.
+  var APK_URL = 'https://github.com/Fammarroquin/familiaMU/releases/latest/download/AppFMarroquin.apk';
+  var APK_URL_32 = 'https://github.com/Fammarroquin/familiaMU/releases/latest/download/AppFMarroquin-32bits.apk';
+  document.getElementById('b32').href = APK_URL_32;
+  var SUPABASE_URL = 'https://pmfutajljncuhtdlhmdg.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnV0YWpsam5jdWh0ZGxobWRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTM1OTMsImV4cCI6MjEwNDM2OTU5M30.7MhBNoRc-fduN-8ZGvhnUT2PUm2B2QWSRFZFRc4x6Tw';
+
+  function directo(u) {
+    var m = u.match(/drive\.google\.com\/file\/d\/([^/?#]+)/) || u.match(/[?&]id=([^&#]+)/);
+    return (m && u.indexOf('drive.google.com') >= 0)
+      ? 'https://drive.google.com/uc?export=download&id=' + m[1] : u;
+  }
+  var yaFue = false;
+  function descargar(u) {
+    if (yaFue) return;
+    yaFue = true;
+    var url = directo(u);
+    document.getElementById('b').href = url;
+    window.location.href = url;
+  }
+  // 1) intenta leer el enlace de Supabase; 2) si tarda más de 3 s, usa el de arriba
+  var plan = setTimeout(function () { descargar(APK_URL); }, 3000);
+  fetch(SUPABASE_URL + '/rest/v1/app_version?select=*&limit=1', {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+  }).then(function (r) { return r.ok ? r.json() : []; }).then(function (filas) {
+    clearTimeout(plan);
+    var f = filas && filas[0];
+    if (f && f.url_apk_32) document.getElementById('b32').href = directo(f.url_apk_32);
+    descargar((f && f.url_apk) || APK_URL);
+  }).catch(function () { clearTimeout(plan); descargar(APK_URL); });
+</script>
+</body>
+</html>

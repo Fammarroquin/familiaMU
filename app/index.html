@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AppFMarroquin · Descargar</title>
+<meta name="description" content="La app de la familia Marroquín: cocina, cumpleaños, memorias, aportes y más. Descárgala para Android.">
+<meta name="theme-color" content="#C62828">
+
+<!-- Vista previa en WhatsApp -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="AppFMarroquin — la app de la familia">
+<meta property="og:description" content="Toca para descargar e instalar en tu Android 📲">
+<meta property="og:image" content="https://fammarroquin.github.io/familiaMU/app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://fammarroquin.github.io/familiaMU/app/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rojo: #D32F2F; --rojo2: #B71C1C; --texto: #1D1B20; --gris: #5F6368;
+    --borde: #ECECEC; --fondo: #FAFAFA; --tarjeta: #FFFFFF; --suave: #FFEBEE;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --texto: #F1F1F1; --gris: #B9B9BE; --borde: #2E2E33; --fondo: #121214;
+      --tarjeta: #1C1C20; --suave: #3A1E1E;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: Roboto, system-ui, sans-serif; background: var(--fondo); color: var(--texto);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px 40px; }
+  header.hero {
+    background: linear-gradient(160deg, #E53935, var(--rojo2));
+    color: #fff; padding: 28px 16px 26px; border-radius: 0 0 28px 28px;
+  }
+  .hero .wrap { padding-bottom: 0; }
+  .fila { display: flex; gap: 16px; align-items: center; }
+  .icono { width: 84px; height: 84px; border-radius: 22px; background: #fff; flex: none;
+           box-shadow: 0 6px 18px rgba(0,0,0,.18); overflow: hidden; }
+  .icono img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: .2px; }
+  .sub { opacity: .9; margin-top: 4px; font-size: 15px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .chip { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25);
+          padding: 7px 12px; border-radius: 999px; font-size: 13px; }
+  .boton {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; margin-top: 20px; padding: 16px; border-radius: 999px; border: 0;
+    background: #fff; color: var(--rojo2); font: 700 18px Roboto, sans-serif; text-decoration: none;
+    box-shadow: 0 8px 22px rgba(0,0,0,.2); cursor: pointer;
+  }
+  .boton:active { transform: scale(.98); }
+  .nota { text-align: center; font-size: 12.5px; opacity: .85; margin-top: 10px; }
+  h2 { font-size: 13px; letter-spacing: 1.2px; color: var(--gris); margin: 28px 4px 12px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .func { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 18px; padding: 14px; }
+  .func .e { font-size: 26px; }
+  .func > b { display: block; margin-top: 6px; font-size: 15px; }
+  .func span { color: var(--gris); font-size: 13px; line-height: 1.35; }
+  .pasos { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 18px; overflow: hidden; }
+  .paso { display: flex; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--borde); }
+  .paso:last-child { border-bottom: 0; }
+  .num { width: 30px; height: 30px; border-radius: 50%; background: var(--suave); color: var(--rojo);
+         font-weight: 700; display: grid; place-items: center; flex: none; }
+  .paso > div > b { display: block; margin-bottom: 2px; }
+  .paso span { color: var(--gris); font-size: 14px; line-height: 1.4; }
+  .aviso { background: var(--suave); border-radius: 16px; padding: 14px 16px; font-size: 14px; line-height: 1.45; }
+  .capturas { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+  .capturas img { height: 380px; border-radius: 18px; border: 1px solid var(--borde); scroll-snap-align: start; flex: none; }
+  .capturas:empty { display: none; }
+  footer { text-align: center; color: var(--gris); font-size: 12.5px; margin-top: 30px; }
+  .flotante { position: fixed; left: 16px; right: 16px; bottom: max(14px, env(safe-area-inset-bottom));
+              max-width: 528px; margin: 0 auto; display: none; }
+  .flotante .boton { background: var(--rojo); color: #fff; margin: 0; }
+  .antiguo { display: block; text-align: center; margin-top: 12px; color: #fff; font-size: 14px;
+             text-decoration: underline; opacity: .95; }
+  .ayuda { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 18px; overflow: hidden; }
+  .ayuda details { border-bottom: 1px solid var(--borde); }
+  .ayuda details:last-child { border-bottom: 0; }
+  .ayuda summary { padding: 14px 16px; font-weight: 700; cursor: pointer; list-style: none; display: flex; gap: 10px; align-items: center; }
+  .ayuda summary::-webkit-details-marker { display: none; }
+  .ayuda summary::after { content: '›'; margin-left: auto; color: var(--gris); font-size: 20px; transition: transform .2s; }
+  .ayuda details[open] summary::after { transform: rotate(90deg); }
+  .ayuda .cuerpo { padding: 0 16px 14px 16px; color: var(--gris); font-size: 14px; line-height: 1.5; }
+  .ayuda .cuerpo b { color: var(--texto); }
+  .ayuda .cuerpo a { color: var(--rojo); font-weight: 700; }
+  @media (max-width: 360px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="fila">
+      <div class="icono"><img src="icon.png" alt="Ícono de AppFMarroquin"></div>
+      <div>
+        <h1>AppFMarroquin</h1>
+        <div class="sub">La app de la familia Marroquín</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chipVersion">Versión —</span>
+      <span class="chip">📱 Android 7 o superior</span>
+      <span class="chip">🔒 Solo familia</span>
+    </div>
+    <a class="boton" id="descargar" href="#">⬇&nbsp; Descargar e instalar</a>
+    <div class="nota" id="notaDescarga">Se descarga un archivo .apk. Sigue los 3 pasos de abajo.</div>
+    <a class="antiguo" id="descargar32" href="#">¿Celular antiguo o te dice “No se instaló”? Descarga esta otra versión</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <h2>CÓMO INSTALAR</h2>
+  <div class="pasos">
+    <div class="paso"><div class="num">1</div><div>
+      <b>Descarga</b>
+      <span>Toca <b>“Descargar e instalar”</b>. Si el navegador pregunta, elige <b>“Descargar de todas formas”</b>.</span>
+    </div></div>
+    <div class="paso"><div class="num">2</div><div>
+      <b>Abre el archivo</b>
+      <span>Toca la notificación de descarga (o búscalo en <b>Archivos → Descargas</b>). Si dice que no se permiten apps de esta fuente: <b>Ajustes → “Permitir de esta fuente”</b> y regresa.</span>
+    </div></div>
+    <div class="paso"><div class="num">3</div><div>
+      <b>Instala y entra</b>
+      <span>Toca <b>Instalar</b>. Si aparece Play Protect, toca <b>“Más detalles” → “Instalar de todas formas”</b> (pasa porque la app es familiar y no está en Play Store).</span>
+    </div></div>
+  </div>
+
+  <h2>¿DICE “NO SE INSTALÓ”?</h2>
+  <div class="ayuda">
+    <details>
+      <summary>📱 1. Prueba la versión para celulares antiguos</summary>
+      <div class="cuerpo">Algunos celulares (antiguos o económicos) no aceptan la versión normal.
+        <a id="descargar32b" href="#">Descarga aquí la versión para celulares antiguos</a> e instálala igual.</div>
+    </details>
+    <details>
+      <summary>🔓 2. Permite instalar desde Chrome o WhatsApp</summary>
+      <div class="cuerpo">Ve a <b>Ajustes → Aplicaciones → Chrome</b> (o WhatsApp, según desde dónde lo bajaste)
+        <b>→ Instalar apps desconocidas → Permitir</b>. Luego vuelve a abrir el archivo descargado.</div>
+    </details>
+    <details>
+      <summary>🛡️ 3. Play Protect la está bloqueando</summary>
+      <div class="cuerpo">Si sale el aviso de Play Protect, toca <b>“Más detalles” → “Instalar de todas formas”</b>.
+        Si no aparece esa opción: abre <b>Play Store → tu foto (arriba) → Play Protect → ⚙️</b> y desactiva un momento
+        <b>“Analizar apps con Play Protect”</b>. Instala la app y luego vuelve a activarlo.</div>
+    </details>
+    <details>
+      <summary>♻️ 4. Ya tenías una versión antigua</summary>
+      <div class="cuerpo">Desinstala la app anterior (mantén presionado el ícono → <b>Desinstalar</b>) y vuelve a instalar.
+        <b>No pierdes nada</b>: tus datos están guardados en la nube; solo vuelves a entrar con tu usuario.</div>
+    </details>
+    <details>
+      <summary>💾 5. Falta espacio o la descarga quedó a medias</summary>
+      <div class="cuerpo">Revisa que tengas al menos <b>200 MB libres</b>. Borra el archivo descargado
+        (en <b>Archivos → Descargas</b>) y vuelve a descargarlo con buena señal o Wi-Fi.</div>
+    </details>
+  </div>
+
+  <h2>QUÉ PUEDES HACER</h2>
+  <div class="grid">
+    <div class="func"><div class="e">🍲</div><b>Cocina</b><span>Turnos, platos y fotos del día.</span></div>
+    <div class="func"><div class="e">🎂</div><b>Cumpleaños</b><span>Calendario familiar con recordatorio.</span></div>
+    <div class="func"><div class="e">📖</div><b>Memorias</b><span>Historias de la familia, como un libro.</span></div>
+    <div class="func"><div class="e">🗳️</div><b>Acuerdos</b><span>Votar y decidir juntos.</span></div>
+    <div class="func"><div class="e">💰</div><b>Aportes</b><span>Cuotas y bauchers en orden.</span></div>
+    <div class="func"><div class="e">🗂️</div><b>Archivo</b><span>Documentos y notas, con PIN.</span></div>
+    <div class="func"><div class="e">📍</div><b>Ubicar celular</b><span>Por si se pierde o lo roban.</span></div>
+    <div class="func"><div class="e">🛒</div><b>Mi tiendita</b><span>Pedidos y pagos fáciles.</span></div>
+  </div>
+
+  <!-- Capturas opcionales: sube captura1.png, captura2.png… y se muestran solas -->
+  <h2 id="tituloCapturas" style="display:none">ASÍ SE VE</h2>
+  <div class="capturas" id="capturas"></div>
+
+  <h2>¿YA LA TIENES?</h2>
+  <div class="aviso">
+    Cuando haya una versión nueva, la misma app te avisará. También puedes volver a este enlace y
+    descargarla otra vez: se instala encima y <b>no pierdes nada</b>.
+  </div>
+
+  <footer><a href="../" style="color:inherit">← Volver a familiaMU</a> · más apps como NotasApp<br><br>Hecho con cariño para la familia Marroquín 💛</footer>
+</main>
+
+<div class="flotante" id="flotante"><a class="boton" id="descargar2" href="#">⬇&nbsp; Descargar e instalar</a></div>
+
+<script>
+  // ================== CONFIGURACIÓN ==================
+  // Enlace del APK (Google Drive o el que uses). Si configuras Supabase
+  // abajo, se toma automático de la tabla app_version (url_apk).
+  // Los instaladores viven en GitHub Releases (siempre la última versión).
+  var APK_URL = 'https://github.com/Fammarroquin/familiaMU/releases/latest/download/AppFMarroquin.apk';
+  var APK_URL_32 = 'https://github.com/Fammarroquin/familiaMU/releases/latest/download/AppFMarroquin-32bits.apk';
+  var VERSION = '';
+  // Opcional: leer la última versión de Supabase (anon key = la pública de la app)
+  var SUPABASE_URL = 'https://pmfutajljncuhtdlhmdg.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnV0YWpsam5jdWh0ZGxobWRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTM1OTMsImV4cCI6MjEwNDM2OTU5M30.7MhBNoRc-fduN-8ZGvhnUT2PUm2B2QWSRFZFRc4x6Tw'; // pega aquí tu anon key para que se actualice solo
+  // ====================================================
+
+  // Convierte un enlace de "ver" de Drive en descarga directa
+  function descargaDirecta(url) {
+    if (!url) return url;
+    var m = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/) || url.match(/[?&]id=([^&#]+)/);
+    if (m && url.indexOf('drive.google.com') >= 0) {
+      return 'https://drive.google.com/uc?export=download&id=' + m[1];
+    }
+    return url;
+  }
+
+  function aplicar(url, version, url32) {
+    var u32 = descargaDirecta(url32 || APK_URL_32);
+    ['descargar32', 'descargar32b'].forEach(function (id) {
+      var a = document.getElementById(id);
+      if (a) a.href = u32;
+    });
+    var u = descargaDirecta(url);
+    ['descargar', 'descargar2'].forEach(function (id) {
+      var a = document.getElementById(id);
+      if (u && u.indexOf('PEGA_AQUI') < 0) { a.href = u; } else {
+        a.href = '#';
+        a.onclick = function (e) { e.preventDefault(); alert('Falta configurar el enlace del APK.'); };
+      }
+    });
+    if (version) document.getElementById('chipVersion').textContent = 'Versión ' + version;
+  }
+
+  aplicar(APK_URL, VERSION);
+
+  if (SUPABASE_ANON_KEY) {
+    fetch(SUPABASE_URL + '/rest/v1/app_version?select=*&limit=1', {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+    }).then(function (r) { return r.ok ? r.json() : []; }).then(function (filas) {
+      var f = filas && filas[0];
+      if (!f) return;
+      var v = f.version_name || f.version || (f.version_code ? ('build ' + f.version_code) : null);
+      aplicar(f.url_apk || APK_URL, v || VERSION, f.url_apk_32 || APK_URL_32);
+    }).catch(function () {});
+  }
+
+  // Capturas opcionales: captura1.png … captura6.png
+  (function () {
+    var cont = document.getElementById('capturas');
+    for (var i = 1; i <= 6; i++) {
+      (function (n) {
+        var img = new Image();
+        img.onload = function () {
+          cont.appendChild(img);
+          document.getElementById('tituloCapturas').style.display = '';
+        };
+        img.alt = 'Captura ' + n;
+        img.src = 'captura' + n + '.png';
+      })(i);
+    }
+  })();
+
+  // Botón flotante cuando el principal sale de la pantalla
+  (function () {
+    var b = document.getElementById('descargar'), f = document.getElementById('flotante');
+    if (!('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (e) {
+      f.style.display = e[0].isIntersecting ? 'none' : 'block';
+    }).observe(b);
+  })();
+</script>
+</body>
+</html>
