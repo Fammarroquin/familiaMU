@@ -10,6 +10,22 @@
     document.querySelectorAll('[data-solo-ios]').forEach(function (n) { n.hidden = false; });
   }
 
+  // NotasApp: versión y APK del último release público en GitHub. Si GitHub
+  // no responde, el botón queda en la página del release (también descarga).
+  var botonNotas = document.querySelector('[data-descargar-notas]');
+  if (botonNotas && window.fetch) {
+    fetch('https://api.github.com/repos/famimaqux/NotasApp-releases/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' }
+    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rel) {
+      if (!rel) return;
+      var apk = (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0];
+      if (apk) botonNotas.href = apk.browser_download_url;
+      var v = (rel.tag_name || '').replace(/^v/i, '');
+      var n = document.querySelector('[data-version-notas]');
+      if (v && n) { n.textContent = 'Versión ' + v; n.hidden = false; }
+    }).catch(function () {});
+  }
+
   // Versión actual desde app_version; si falla, el texto sigue oculto.
   var nodos = document.querySelectorAll('[data-version-app]');
   if (!nodos.length || !window.FMU) return;

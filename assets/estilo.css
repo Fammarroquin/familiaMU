@@ -88,6 +88,9 @@ a.seccion:active { transform: scale(.99); }
                               padding: 12px 14px; font-size: 14px; line-height: 1.45; }
 .app-descarga .solo-android a { color: var(--rojo); font-weight: 500; }
 @media (min-width: 480px) { .app-descarga .boton { width: auto; padding: 11px 22px; } }
+/* NotasApp: mismo diseño, con el verde de su ícono */
+.app-notas .boton { background: #00897B; }
+.app-notas:target { border-color: #00897B; box-shadow: 0 0 0 2px #00897B; }
 
 /* ---------- Tiendita: barra superior ---------- */
 .top { background: linear-gradient(160deg, #E53935, var(--rojo2)); color: #fff; padding: 14px 0 16px; }
