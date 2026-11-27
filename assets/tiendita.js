@@ -7,6 +7,7 @@
   var CLAVE_CARRITO = 'fmu.tiendita.carrito';
   var CLAVE_PERFIL = 'fmu.perfil';
   var CLAVE_PAGO = 'fmu.tiendita.ultimoPago';
+  var CLAVE_CODIGO_QR = 'fmu.tiendita.codigoQR';
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -29,6 +30,23 @@
     enviando: false,        // creando el pedido en el servidor
     compartiendo: false     // hoja de compartir abierta
   };
+
+  // ------------------------------------------------- código desde el QR
+  // El QR impreso abre …/tiendita/#g=XXXXXX: el código del grupo viene en el
+  // enlace (en el #, no llega a ningún servidor), así solo piden el nombre.
+  function codigoDelEnlace() {
+    var m = /(?:^#|&)g=([A-Za-z0-9]{6})(?:&|$)/.exec(location.hash || '');
+    if (!m) return null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    return m[1].toUpperCase();
+  }
+  var codigoQR = codigoDelEnlace();
+  if (codigoQR) {
+    FMU.guardar(CLAVE_CODIGO_QR, codigoQR);
+    if (estado.perfil) { estado.perfil.codigo = codigoQR; FMU.guardar(CLAVE_PERFIL, estado.perfil); }
+  } else {
+    codigoQR = FMU.leer(CLAVE_CODIGO_QR);
+  }
 
   // ---------------------------------------------------------------- util
   function soles(n) { return 'S/ ' + (Number(n) || 0).toFixed(2); }
@@ -223,7 +241,9 @@
     var p = estado.perfil || {};
     $('fNombre').value = p.nombre || '';
     $('fCelular').value = p.celular || '';
-    $('fCodigo').value = p.codigo || '';
+    $('fCodigo').value = p.codigo || codigoQR || '';
+    // Con el código del QR no hace falta mostrarlo (salvo que el servidor lo rechace).
+    $('cCodigo').hidden = !!codigoQR && campoMalo !== 'codigo';
     ['cNombre', 'cCelular', 'cCodigo'].forEach(function (c) { marcarCampo(c, null); });
     if (campoMalo) {
       var mapa = { nombre: 'cNombre', celular: 'cCelular', codigo: 'cCodigo' };
@@ -232,7 +252,7 @@
     cerrar($('dlgPago'));
     abrir($('dlgDatos'));
     var foco = { nombre: 'fNombre', celular: 'fCelular', codigo: 'fCodigo' }[campoMalo] ||
-      (p.nombre ? 'fCodigo' : 'fNombre');
+      (p.nombre && $('cCodigo').hidden === false ? 'fCodigo' : 'fNombre');
     setTimeout(function () { $(foco).focus(); }, 50);
   }
 
@@ -247,6 +267,7 @@
     if (celular && !/^9\d{8}$/.test(celular)) { marcarCampo('cCelular', '9 dígitos, empieza con 9.'); ok = false; } else marcarCampo('cCelular', null);
     if (codigo.length !== 6) { marcarCampo('cCodigo', 'El código tiene 6 caracteres.'); ok = false; } else marcarCampo('cCodigo', null);
     if (!ok) return;
+    if (codigoQR && codigo !== codigoQR) { codigoQR = null; FMU.guardar(CLAVE_CODIGO_QR, null); }
     estado.perfil = { nombre: nombre, celular: celular, codigo: codigo };
     FMU.guardar(CLAVE_PERFIL, estado.perfil);
     pintarPerfil();
